@@ -62,3 +62,14 @@ export function buildPageByPathQuery(path: string) {
     }
   `;
 }
+
+export const PAGES_LIST_QUERY = `
+  {
+    pageList {
+      items {
+        title
+        path
+      }
+    }
+  }
+`;

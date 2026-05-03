@@ -7,3 +7,8 @@ export type Page = {
   sections: (HeroSection | RichTextSection)[];
   seo: PageSeo;
 };
+
+export type NavigationItem = {
+  href: string;
+  label: string;
+};

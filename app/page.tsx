@@ -1,16 +1,13 @@
-import HeroBanner from "@/components/hero-banner";
-import SectionIntro from "@/components/section-intro";
+import PageSections from "@/components/page-sections";
+import { getHomePage } from "@/features/pages/page.service";
+import { notFound } from "next/navigation";
 
-const sectionIntroProps = {
-  title: "Bienvenido a Weblog",
-  description: "Explora artículos, ideas y recursos sobre tecnología, diseño y desarrollo."
-}
+export default async function Page() {
+  const page = await getHomePage();
 
-export default function Page () {
-  return (
-    <>
-      <HeroBanner title="Inicio" />
-      <SectionIntro {...sectionIntroProps} className="p-10" />
-    </>
-  )
+  if (!page) {
+    notFound();
+  }
+
+  return <PageSections sections={page.sections} />;
 }

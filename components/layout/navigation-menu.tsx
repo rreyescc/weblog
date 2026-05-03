@@ -2,14 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-
-const navigationItems = [
-  { href: "/", label: "Inicio" },
-  { href: "/blog", label: "Blog" },
-];
+import type { NavigationItem } from "@/types/page";
 
 type NavigationMenuProps = {
   ariaLabel: string;
+  items: NavigationItem[];
   className?: string;
   linkClassName?: string;
   activeLinkClassName?: string;
@@ -17,6 +14,7 @@ type NavigationMenuProps = {
 
 export default function NavigationMenu({
   ariaLabel,
+  items,
   className = "",
   linkClassName = "",
   activeLinkClassName = "",
@@ -25,7 +23,7 @@ export default function NavigationMenu({
 
   return (
     <nav aria-label={ariaLabel} className={className}>
-      {navigationItems.map((item) => {
+      {items.map((item) => {
         const isActive =
           item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
 

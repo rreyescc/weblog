@@ -1,7 +1,17 @@
 import Link from "next/link";
+import { getNavigationPages } from "@/features/pages/page.service";
+import type { NavigationItem } from "@/types/page";
 import NavigationMenu from "./navigation-menu";
 
-export default function Footer() {
+const baseNavigationItems: NavigationItem[] = [
+  { href: "/", label: "Inicio" },
+  { href: "/blog", label: "Blog" },
+];
+
+export default async function Footer() {
+  const cmsNavigationItems = await getNavigationPages();
+  const navigationItems = [...baseNavigationItems, ...cmsNavigationItems];
+
   return (
     <footer className="border-t border-black/10 bg-white">
       <div className="mx-auto flex w-full max-w-6xl items-center gap-8 px-6 py-5">
@@ -16,6 +26,7 @@ export default function Footer() {
 
         <NavigationMenu
           ariaLabel="Footer"
+          items={navigationItems}
           className="flex items-center gap-5 text-sm text-black/70"
           linkClassName="transition hover:text-black"
           activeLinkClassName="text-black"
