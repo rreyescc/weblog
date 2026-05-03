@@ -1,0 +1,34 @@
+### Post creado
+# Firma requerida: HMAC-SHA256 del body exacto usando REVALIDATE_SECRET.
+# Header: x-revalidate-signature: sha256=<hex>
+POST http://localhost:3000/api/revalidate
+Content-Type: application/json
+x-revalidate-signature: sha256=3673db732c602fc2f5e8ff4fd11fc1c07dc1660ddbf15bb6a7bed85d6cb041a6
+
+{"entity":"post","event":"created","slug":"como-estructurar-un-blog-con-next"}
+
+### Post actualizado
+POST http://localhost:3000/api/revalidate
+Content-Type: application/json
+x-revalidate-signature: sha256=d726a971a5757e34f43d73e6cf33cab4685d65b7101d2e2ba9e786b580550663
+
+{"entity":"post","event":"updated","slug":"como-estructurar-un-blog-con-next"}
+
+### Post actualizado con cambio de slug
+POST http://localhost:3000/api/revalidate
+Content-Type: application/json
+x-revalidate-signature: sha256=735707ab8f7b27528d6c1bf783f78e6d3d3a61d3fe59d5f166dc17ca3a2eb484
+
+{"entity":"post","event":"updated","slug":"slug-nuevo","previousSlug":"slug-anterior"}
+
+### Post eliminado
+POST http://localhost:3000/api/revalidate
+Content-Type: application/json
+x-revalidate-signature: sha256=d788b9ffb6c1df4f8c4e526e71db508745af986264565cab55ee3f9bd34ffec0
+
+{"entity":"post","event":"deleted","slug":"como-estructurar-un-blog-con-next"}
+
+# node -e 'const secret="8d2ffe1a4617bab43322846470417b2ba98ba0f6577ea029ce135ea77595e0f5"; const body="{\"entity\":\"post\",\"event\":\"created\",\"slug\":\"como-estructurar-un-blog-con-next\"}"; console.log(require("node:crypto").createHmac("sha256", secret).update(body, "utf8").digest("hex"))'
+# node -e 'const secret="8d2ffe1a4617bab43322846470417b2ba98ba0f6577ea029ce135ea77595e0f5"; const body="{\"entity\":\"post\",\"event\":\"updated\",\"slug\":\"como-estructurar-un-blog-con-next\"}"; console.log(require("node:crypto").createHmac("sha256", secret).update(body, "utf8").digest("hex"))'
+# node -e 'const secret="8d2ffe1a4617bab43322846470417b2ba98ba0f6577ea029ce135ea77595e0f5"; const body="{\"entity\":\"post\",\"event\":\"updated\",\"slug\":\"slug-nuevo\",\"previousSlug\":\"slug-anterior\"}"; console.log(require("node:crypto").createHmac("sha256", secret).update(body, "utf8").digest("hex"))'
+# node -e 'const secret="8d2ffe1a4617bab43322846470417b2ba98ba0f6577ea029ce135ea77595e0f5"; const body="{\"entity\":\"post\",\"event\":\"deleted\",\"slug\":\"como-estructurar-un-blog-con-next\"}"; console.log(require("node:crypto").createHmac("sha256", secret).update(body, "utf8").digest("hex"))'
