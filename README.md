@@ -99,19 +99,41 @@ Los mappers en `features/*/post.mapper.ts` transforman datos CMS → dominio.
 
 ## Revalidación ISR
 
-El endpoint `POST /api/revalidate` permite actualizar el cache de páginas:
+El endpoint `POST /api/revalidate` actualiza el cache de `posts` y `pages` mediante tags. Requiere firma HMAC-SHA256 en el header `x-revalidate-signature`.
+
+### Posts
 
 ```bash
-# Ejemplo: revalidar lista de posts
 curl -X POST http://localhost:3000/api/revalidate \
   -H "Content-Type: application/json" \
   -H "x-revalidate-signature: sha256=<hmac-signature>" \
-  -d '{"entity": "post", "event": "update", "slug": "my-post"}'
+  -d '{"entity":"post","event":"updated","slug":"my-post"}'
 ```
+
+Tags revalidadas:
+- `posts:list`
+- `post:<slug>`
+- `post:<previousSlug>` si cambia el slug
+
+### Pages
+
+```bash
+curl -X POST http://localhost:3000/api/revalidate \
+  -H "Content-Type: application/json" \
+  -H "x-revalidate-signature: sha256=<hmac-signature>" \
+  -d '{"entity":"page","event":"updated","path":"/about"}'
+```
+
+Tags revalidadas:
+- `pages:list`
+- `page:<path>`
+- `page:<previousPath>` si cambia el path
+
+La home se revalida con `path: "/"`.
 
 Generar firma:
 ```bash
-echo -n '{"entity":"post","event":"update","slug":"my-post"}' | \
+echo -n '{"entity":"page","event":"updated","path":"/about"}' | \
   openssl dgst -sha256 -hmac "REVALIDATE_SECRET"
 ```
 
