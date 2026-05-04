@@ -2,16 +2,29 @@ import "server-only";
 
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { getPostCacheTag, POSTS_LIST_CACHE_TAG } from "@/features/posts/post.service";
+import { getPageCacheTag, PAGES_LIST_CACHE_TAG, normalizePagePath } from "@/features/pages/page.service";
 import { revalidateTag } from "next/cache";
 import type { NextRequest } from "next/server";
 import { z } from "zod";
 
-const revalidatePayloadSchema = z.object({
+const postPayloadSchema = z.object({
   entity: z.literal("post"),
   event: z.enum(["created", "updated", "deleted"]),
   slug: z.string().trim().min(1),
   previousSlug: z.string().trim().min(1).optional(),
 }).strict();
+
+const pagePayloadSchema = z.object({
+  entity: z.literal("page"),
+  event: z.enum(["created", "updated", "deleted"]),
+  path: z.string().trim().min(1),
+  previousPath: z.string().trim().min(1).optional(),
+}).strict();
+
+const revalidatePayloadSchema = z.discriminatedUnion("entity", [
+  postPayloadSchema,
+  pagePayloadSchema,
+]);
 
 type RevalidatePayload = z.infer<typeof revalidatePayloadSchema>;
 
@@ -45,14 +58,36 @@ function isValidSignature(rawBody: string, signatureHeader?: string | null) {
   return hasExpectedLength && signaturesMatch;
 }
 
-function getTagsToRevalidate(payload: RevalidatePayload) {
-  const tags = new Set<string>([POSTS_LIST_CACHE_TAG, getPostCacheTag(payload.slug)]);
+function getPostTagsToRevalidate(slug: string, previousSlug?: string) {
+  const tags = new Set<string>([POSTS_LIST_CACHE_TAG, getPostCacheTag(slug)]);
 
-  if (payload.previousSlug && payload.previousSlug !== payload.slug) {
-    tags.add(getPostCacheTag(payload.previousSlug));
+  if (previousSlug && previousSlug !== slug) {
+    tags.add(getPostCacheTag(previousSlug));
   }
 
   return Array.from(tags);
+}
+
+function getPageTagsToRevalidate(path: string, previousPath?: string) {
+  const normalizedPath = normalizePagePath(path);
+  const tags = new Set<string>([PAGES_LIST_CACHE_TAG, getPageCacheTag(normalizedPath)]);
+
+  if (previousPath) {
+    const normalizedPreviousPath = normalizePagePath(previousPath);
+    if (normalizedPreviousPath !== normalizedPath) {
+      tags.add(getPageCacheTag(normalizedPreviousPath));
+    }
+  }
+
+  return Array.from(tags);
+}
+
+function getTagsToRevalidate(payload: RevalidatePayload) {
+  if (payload.entity === "post") {
+    return getPostTagsToRevalidate(payload.slug, payload.previousSlug);
+  }
+
+  return getPageTagsToRevalidate(payload.path, payload.previousPath);
 }
 
 export async function POST(request: NextRequest) {

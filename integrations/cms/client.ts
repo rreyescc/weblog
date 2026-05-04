@@ -57,7 +57,7 @@ export async function fetchCms<T>(query: string, options?: FetchCmsOptions): Pro
     headers,
     next: {
       revalidate: false,
-      tags: options?.tags ?? ["posts"],
+      tags: options?.tags ?? ["cms"],
     },
     body: JSON.stringify({ query }),
   });
