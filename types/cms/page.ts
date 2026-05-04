@@ -3,6 +3,7 @@ import { Image } from "./image";
 
 export type HeroSection = {
   __typename: "HerosectionModel";
+  _id: string;
   title: string;
   subtitle: RichTextContent;
   backgroundImage: Image;
@@ -15,6 +16,7 @@ export type PageSeo = {
 
 export type RichTextSection = {
   __typename: "RichtextsectionModel";
+  _id: string;
   title: string;
   body: RichTextContent;
 }

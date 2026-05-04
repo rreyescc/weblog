@@ -18,6 +18,7 @@ const IMAGE_REF = `
 
 const HERO_SECTION = `
   ... on HerosectionModel {
+    _id
     title
     subtitle {
       ${RICHTEXT_FIELDS}
@@ -30,6 +31,7 @@ const HERO_SECTION = `
 
 const RICHTEXT_SECTION = `
   ... on RichtextsectionModel {
+    _id
     title
     body {
       ${RICHTEXT_FIELDS}

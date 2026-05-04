@@ -53,19 +53,18 @@ function RichTextSectionBlock({ section }: { section: RichTextSection }) {
 }
 
 export default function PageSections({ sections }: { sections: (HeroSection | RichTextSection)[] }) {
-  const heroSection = sections.find((section) => section.__typename === "HerosectionModel") as
-    | HeroSection
-    | undefined;
-  const richTextSections = sections.filter(
-    (section) => section.__typename === "RichtextsectionModel",
-  ) as RichTextSection[];
-
   return (
     <>
-      {heroSection ? <HeroSectionBlock section={heroSection} /> : null}
-      {richTextSections.map((section, index) => (
-        <RichTextSectionBlock key={`${section.title}-${index}`} section={section} />
-      ))}
+      {sections.map((section) => {
+        switch (section.__typename) {
+          case "HerosectionModel":
+            return <HeroSectionBlock key={section._id} section={section} />;
+          case "RichtextsectionModel":
+            return <RichTextSectionBlock key={section._id} section={section} />;
+          default:
+            return null;
+        }
+      })}
     </>
   );
 }
