@@ -1,13 +1,10 @@
-import PageSections from "@/components/page-sections";
-import { getHomePage } from "@/features/pages/page.service";
-import { notFound } from "next/navigation";
+import { renderHomePage } from "@/features/rendering/pages";
+import { getLocalizedMetadata } from "@/lib/metadata";
+
+export function generateMetadata() {
+  return getLocalizedMetadata("es", "/", true);
+}
 
 export default async function Page() {
-  const page = await getHomePage();
-
-  if (!page) {
-    notFound();
-  }
-
-  return <PageSections sections={page.sections} />;
+  return renderHomePage("es");
 }

@@ -4,6 +4,7 @@ import type { RichTextContent } from "./cms/richtext";
 
 export type PostSummary = {
   slug: string;
+  translationKey?: string;
   title: string;
   intro: string;
   image: string;

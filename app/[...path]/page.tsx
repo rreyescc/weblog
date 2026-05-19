@@ -1,6 +1,4 @@
-import PageSections from '@/components/page-sections';
-import { getPageByPath } from '@/features/pages/page.service';
-import { notFound } from 'next/navigation';
+import { getDynamicPageMetadata, renderDynamicPage } from '@/features/rendering/pages';
 
 type PageProps = {
   params: Promise<{ path: string[] }>;
@@ -8,11 +6,10 @@ type PageProps = {
 
 export default async function Page({ params }: PageProps) {
   const { path } = await params;
-  const page = await getPageByPath(path.join("/"));
+  return renderDynamicPage("es", path.join("/"));
+}
 
-  if (!page) {
-    notFound();
-  }
-
-  return <PageSections sections={page.sections} />;
+export async function generateMetadata({ params }: PageProps) {
+  const { path } = await params;
+  return getDynamicPageMetadata("es", `/${path.join("/")}`);
 }

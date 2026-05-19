@@ -1,4 +1,5 @@
 import { escapeGraphqlString } from "./client";
+import { getCmsContentRoot, type Locale } from "@/lib/i18n";
 
 const RICHTEXT_FIELDS = `
   html
@@ -47,16 +48,26 @@ const SECTIONS = `
   }
 `;
 
-export function buildPageByPathQuery(path: string) {
+function buildPageLocaleFilter(locale: Locale) {
+  const root = escapeGraphqlString(getCmsContentRoot(locale, "pages"));
+
+  return `_path: { _expressions: [{ value: "${root}", _operator: STARTS_WITH }] }`;
+}
+
+export function buildPageByPathQuery(locale: Locale, path: string) {
   const safePath = escapeGraphqlString(path);
 
   return `
     {
-      pageList ( filter: { path: { _expressions: [{value: "${safePath}" }] } } )
+      pageList ( filter: {
+        ${buildPageLocaleFilter(locale)}
+        path: { _expressions: [{value: "${safePath}" }] }
+      } )
       {
         items {
           title
           path
+          translationKey
           seo
           ${SECTIONS}
         }
@@ -65,13 +76,37 @@ export function buildPageByPathQuery(path: string) {
   `;
 }
 
-export const PAGES_LIST_QUERY = `
-  {
-    pageList {
-      items {
-        title
-        path
+export function buildPagesListQuery(locale: Locale) {
+  return `
+    {
+      pageList(filter: { ${buildPageLocaleFilter(locale)} }) {
+        items {
+          title
+          path
+          translationKey
+        }
       }
     }
-  }
-`;
+  `;
+}
+
+export function buildPageByTranslationKeyQuery(locale: Locale, translationKey: string) {
+  const safeTranslationKey = escapeGraphqlString(translationKey);
+
+  return `
+    {
+      pageList(filter: {
+        ${buildPageLocaleFilter(locale)}
+        translationKey: { _expressions: [{value: "${safeTranslationKey}" }] }
+      })
+      {
+        items {
+          title
+          path
+          translationKey
+          seo
+        }
+      }
+    }
+  `;
+}

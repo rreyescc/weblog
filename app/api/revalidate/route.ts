@@ -1,15 +1,19 @@
 import "server-only";
 
 import { createHmac, timingSafeEqual } from "node:crypto";
-import { getPostCacheTag, POSTS_LIST_CACHE_TAG } from "@/features/posts/post.service";
-import { getPageCacheTag, PAGES_LIST_CACHE_TAG, normalizePagePath } from "@/features/pages/page.service";
+import { getPostCacheTag, getPostsListCacheTag } from "@/features/posts/post.service";
+import { getPageCacheTag, getPagesListCacheTag, normalizePagePath } from "@/features/pages/page.service";
+import { LOCALES } from "@/lib/i18n";
 import { revalidateTag } from "next/cache";
 import type { NextRequest } from "next/server";
 import { z } from "zod";
 
+const localeSchema = z.enum(LOCALES);
+
 const postPayloadSchema = z.object({
   entity: z.literal("post"),
   event: z.enum(["created", "updated", "deleted"]),
+  locale: localeSchema,
   slug: z.string().trim().min(1),
   previousSlug: z.string().trim().min(1).optional(),
 }).strict();
@@ -17,6 +21,7 @@ const postPayloadSchema = z.object({
 const pagePayloadSchema = z.object({
   entity: z.literal("page"),
   event: z.enum(["created", "updated", "deleted"]),
+  locale: localeSchema,
   path: z.string().trim().min(1),
   previousPath: z.string().trim().min(1).optional(),
 }).strict();
@@ -58,24 +63,24 @@ function isValidSignature(rawBody: string, signatureHeader?: string | null) {
   return hasExpectedLength && signaturesMatch;
 }
 
-function getPostTagsToRevalidate(slug: string, previousSlug?: string) {
-  const tags = new Set<string>([POSTS_LIST_CACHE_TAG, getPostCacheTag(slug)]);
+function getPostTagsToRevalidate(locale: RevalidatePayload["locale"], slug: string, previousSlug?: string) {
+  const tags = new Set<string>([getPostsListCacheTag(locale), getPostCacheTag(locale, slug)]);
 
   if (previousSlug && previousSlug !== slug) {
-    tags.add(getPostCacheTag(previousSlug));
+    tags.add(getPostCacheTag(locale, previousSlug));
   }
 
   return Array.from(tags);
 }
 
-function getPageTagsToRevalidate(path: string, previousPath?: string) {
+function getPageTagsToRevalidate(locale: RevalidatePayload["locale"], path: string, previousPath?: string) {
   const normalizedPath = normalizePagePath(path);
-  const tags = new Set<string>([PAGES_LIST_CACHE_TAG, getPageCacheTag(normalizedPath)]);
+  const tags = new Set<string>([getPagesListCacheTag(locale), getPageCacheTag(locale, normalizedPath)]);
 
   if (previousPath) {
     const normalizedPreviousPath = normalizePagePath(previousPath);
     if (normalizedPreviousPath !== normalizedPath) {
-      tags.add(getPageCacheTag(normalizedPreviousPath));
+      tags.add(getPageCacheTag(locale, normalizedPreviousPath));
     }
   }
 
@@ -84,10 +89,10 @@ function getPageTagsToRevalidate(path: string, previousPath?: string) {
 
 function getTagsToRevalidate(payload: RevalidatePayload) {
   if (payload.entity === "post") {
-    return getPostTagsToRevalidate(payload.slug, payload.previousSlug);
+    return getPostTagsToRevalidate(payload.locale, payload.slug, payload.previousSlug);
   }
 
-  return getPageTagsToRevalidate(payload.path, payload.previousPath);
+  return getPageTagsToRevalidate(payload.locale, payload.path, payload.previousPath);
 }
 
 export async function POST(request: NextRequest) {

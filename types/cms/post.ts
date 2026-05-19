@@ -4,6 +4,7 @@ import { Image } from "./image";
 export type Post = {
   title?: string;
   slug?: string;
+  translationKey?: string;
   intro?: string;
   coverImage?: Image;
   publishedAt?: string;

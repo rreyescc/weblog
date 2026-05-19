@@ -7,6 +7,7 @@ Blog frontend construido con Next.js 16 que consume contenido de un CMS headless
 - **App Router** - Next.js 16 con App Router para routing moderno
 - **ISR con cache tags** - Revalidación on-demand via webhook seguro
 - **GraphQL** - Cliente CMS para consultas al endpoint headless
+- **Multi idioma** - Español por defecto e inglés bajo `/en`
 - **TypeScript** - Tipado completo con separación de tipos CMS vs dominio
 - **Tailwind CSS v4** - Estilos con utilities classes y theme customization
 - **Dark mode ready** - Sistema de temas configurado
@@ -51,6 +52,7 @@ cp .env.example .env.local
 | `CMS_PASSWORD` | Password para basic auth | No* |
 | `REVALIDATE_SECRET` | Secret para firma HMAC del webhook de revalidación | Sí |
 | `USE_MOCK_CMS` | Usar datos mock en lugar del CMS real | No |
+| `NEXT_PUBLIC_SITE_URL` | URL base para canonical y alternates SEO | No |
 
 *Solo requerido si el CMS requiere autenticación basic
 
@@ -76,6 +78,7 @@ weblog-frontend/
 │   ├── [...path]/           # Catch-all para páginas dinámicas
 │   ├── api/revalidate/      # Webhook de cache invalidation
 │   ├── blog/                # Routes del blog
+│   ├── en/                  # Routes localizadas en inglés
 │   └── layout.tsx           # Root layout
 ├── components/              # Componentes UI reutilizables
 ├── features/                # Lógica de negocio por dominio
@@ -99,7 +102,13 @@ Los mappers en `features/*/post.mapper.ts` transforman datos CMS → dominio.
 
 ## Revalidación ISR
 
-El endpoint `POST /api/revalidate` actualiza el cache de `posts` y `pages` mediante tags. Requiere firma HMAC-SHA256 en el header `x-revalidate-signature`.
+El endpoint `POST /api/revalidate` actualiza el cache de `posts` y `pages` mediante tags por locale. Requiere firma HMAC-SHA256 en el header `x-revalidate-signature`.
+
+Locales soportados:
+- `es` como idioma por defecto sin prefijo: `/`, `/blog`, `/about`
+- `en` con prefijo publico: `/en`, `/en/blog`, `/en/about`
+
+El campo `page.path` del CMS no incluye locale. Por ejemplo, la URL publica `/en/about` consulta `path: "/about"` bajo `/content/dam/weblog/en/pages`.
 
 ### Posts
 
@@ -107,13 +116,13 @@ El endpoint `POST /api/revalidate` actualiza el cache de `posts` y `pages` media
 curl -X POST http://localhost:3000/api/revalidate \
   -H "Content-Type: application/json" \
   -H "x-revalidate-signature: sha256=<hmac-signature>" \
-  -d '{"entity":"post","event":"updated","slug":"my-post"}'
+  -d '{"entity":"post","event":"updated","locale":"en","slug":"my-post"}'
 ```
 
 Tags revalidadas:
-- `posts:list`
-- `post:<slug>`
-- `post:<previousSlug>` si cambia el slug
+- `posts:list:<locale>`
+- `post:<locale>:<slug>`
+- `post:<locale>:<previousSlug>` si cambia el slug
 
 ### Pages
 
@@ -121,19 +130,19 @@ Tags revalidadas:
 curl -X POST http://localhost:3000/api/revalidate \
   -H "Content-Type: application/json" \
   -H "x-revalidate-signature: sha256=<hmac-signature>" \
-  -d '{"entity":"page","event":"updated","path":"/about"}'
+  -d '{"entity":"page","event":"updated","locale":"en","path":"/about"}'
 ```
 
 Tags revalidadas:
-- `pages:list`
-- `page:<path>`
-- `page:<previousPath>` si cambia el path
+- `pages:list:<locale>`
+- `page:<locale>:<path>`
+- `page:<locale>:<previousPath>` si cambia el path
 
 La home se revalida con `path: "/"`.
 
 Generar firma:
 ```bash
-echo -n '{"entity":"page","event":"updated","path":"/about"}' | \
+echo -n '{"entity":"page","event":"updated","locale":"en","path":"/about"}' | \
   openssl dgst -sha256 -hmac "REVALIDATE_SECRET"
 ```
 

@@ -32,6 +32,7 @@ export function mapCmsPostToSummary(post: Post): PostSummary | null {
 
   return {
     slug: post.slug,
+    translationKey: post.translationKey,
     title: post.title,
     intro: post.intro,
     image: post.coverImage?._path ? `${cmsHost}${post.coverImage._path}` : "",

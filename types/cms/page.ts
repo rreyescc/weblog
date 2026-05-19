@@ -25,6 +25,7 @@ export type Page = {
   title: string;
   path: string;
   slug: string;
+  translationKey?: string;
   sections: (HeroSection | RichTextSection) []
   seo: PageSeo;
 }

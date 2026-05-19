@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { normalizePublicPath } from "@/lib/i18n";
 import type { NavigationItem } from "@/types/page";
 
 type NavigationMenuProps = {
@@ -24,8 +25,10 @@ export default function NavigationMenu({
   return (
     <nav aria-label={ariaLabel} className={className}>
       {items.map((item) => {
+        const normalizedHref = normalizePublicPath(item.href);
+        const normalizedPathname = normalizePublicPath(pathname);
         const isActive =
-          item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+          normalizedHref === "/" ? normalizedPathname === "/" : normalizedPathname.startsWith(normalizedHref);
 
         return (
           <Link

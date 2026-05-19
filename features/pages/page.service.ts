@@ -1,9 +1,12 @@
 import { fetchCms } from "@/integrations/cms/client";
-import { buildPageByPathQuery, PAGES_LIST_QUERY } from "@/integrations/cms/page-queries";
+import { buildPageByPathQuery, buildPageByTranslationKeyQuery, buildPagesListQuery } from "@/integrations/cms/page-queries";
+import { DEFAULT_LOCALE, getLocalizedNavigationItem, type Locale } from "@/lib/i18n";
 import type { PagesResponse } from "@/types/cms/page";
 import type { NavigationItem, Page } from "@/types/page";
 
-export const PAGES_LIST_CACHE_TAG = "pages:list";
+export function getPagesListCacheTag(locale: Locale = DEFAULT_LOCALE): string {
+  return `pages:list:${locale}`;
+}
 
 export function normalizePagePath(path: string): string {
   const trimmedPath = path.trim();
@@ -15,16 +18,16 @@ export function normalizePagePath(path: string): string {
   return trimmedPath.startsWith("/") ? trimmedPath : `/${trimmedPath}`;
 }
 
-export function getPageCacheTag(path: string): string {
+export function getPageCacheTag(locale: Locale, path: string): string {
   const normalized = normalizePagePath(path);
-  return `page:${normalized}`;
+  return `page:${locale}:${normalized}`;
 }
 
-export async function getPageByPath(path: string): Promise<Page | undefined> {
+export async function getPageByPath(path: string, locale: Locale = DEFAULT_LOCALE): Promise<Page | undefined> {
   const normalizedPath = normalizePagePath(path);
-  const query = buildPageByPathQuery(normalizedPath);
+  const query = buildPageByPathQuery(locale, normalizedPath);
   const { data } = await fetchCms<PagesResponse>(query, {
-    tags: [getPageCacheTag(normalizedPath)],
+    tags: [getPageCacheTag(locale, normalizedPath)],
   });
 
   const item = data.pageList.items?.[0];
@@ -36,18 +39,43 @@ export async function getPageByPath(path: string): Promise<Page | undefined> {
   return {
     title: item.title ?? "",
     path: item.path ?? "",
+    translationKey: item.translationKey,
     sections: item.sections ?? [],
     seo: item.seo ?? {},
   };
 }
 
-export function getHomePage() {
-  return getPageByPath("/");
+export async function getPageByTranslationKey(
+  translationKey: string,
+  locale: Locale = DEFAULT_LOCALE,
+): Promise<Page | undefined> {
+  const query = buildPageByTranslationKeyQuery(locale, translationKey);
+  const { data } = await fetchCms<PagesResponse>(query, {
+    tags: [getPagesListCacheTag(locale)],
+  });
+
+  const item = data.pageList.items?.[0];
+
+  if (!item) {
+    return undefined;
+  }
+
+  return {
+    title: item.title ?? "",
+    path: item.path ?? "",
+    translationKey: item.translationKey,
+    sections: item.sections ?? [],
+    seo: item.seo ?? {},
+  };
 }
 
-export async function getNavigationPages(): Promise<NavigationItem[]> {
-  const { data } = await fetchCms<PagesResponse>(PAGES_LIST_QUERY, {
-    tags: [PAGES_LIST_CACHE_TAG],
+export function getHomePage(locale: Locale = DEFAULT_LOCALE) {
+  return getPageByPath("/", locale);
+}
+
+export async function getNavigationPages(locale: Locale = DEFAULT_LOCALE): Promise<NavigationItem[]> {
+  const { data } = await fetchCms<PagesResponse>(buildPagesListQuery(locale), {
+    tags: [getPagesListCacheTag(locale)],
   });
   const items = data.pageList.items ?? [];
 
@@ -59,6 +87,6 @@ export async function getNavigationPages(): Promise<NavigationItem[]> {
       return [];
     }
 
-    return [{ href, label }];
+    return [getLocalizedNavigationItem(locale, { href, label })];
   });
 }

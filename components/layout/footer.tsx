@@ -1,41 +1,30 @@
-import Link from "next/link";
 import { getNavigationPages } from "@/features/pages/page.service";
+import { DEFAULT_LOCALE, getBlogHref, getDictionary, getHomeHref, type Locale } from "@/lib/i18n";
 import type { NavigationItem } from "@/types/page";
-import NavigationMenu from "./navigation-menu";
+import FooterClient from "./footer-client";
 
-const baseNavigationItems: NavigationItem[] = [
-  { href: "/", label: "Inicio" },
-  { href: "/blog", label: "Blog" },
-];
+function getBaseNavigationItems(locale: Locale, dictionary: ReturnType<typeof getDictionary>): NavigationItem[] {
+  return [
+    { href: getHomeHref(locale), label: dictionary.navigation.home },
+    { href: getBlogHref(locale), label: dictionary.navigation.blog },
+  ];
+}
 
-export default async function Footer() {
-  const cmsNavigationItems = await getNavigationPages();
-  const navigationItems = [...baseNavigationItems, ...cmsNavigationItems];
+export default async function Footer({ locale = DEFAULT_LOCALE }: { locale?: Locale }) {
+  void locale;
 
-  return (
-    <footer className="border-t border-black/10 bg-white">
-      <div className="mx-auto flex w-full max-w-6xl items-center gap-8 px-6 py-5">
-        <Link href="/" className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full border border-black/15 bg-black text-sm font-semibold text-white">
-            W
-          </div>
-          <span className="text-lg font-semibold tracking-tight text-black">
-            Weblog
-          </span>
-        </Link>
+  const [esNavigationItems, enNavigationItems] = await Promise.all([
+    getNavigationItems("es"),
+    getNavigationItems("en"),
+  ]);
 
-        <NavigationMenu
-          ariaLabel="Footer"
-          items={navigationItems}
-          className="flex items-center gap-5 text-sm text-black/70"
-          linkClassName="transition hover:text-black"
-          activeLinkClassName="text-black"
-        />
+  return <FooterClient itemsByLocale={{ es: esNavigationItems, en: enNavigationItems }} />;
+}
 
-        <p className="ml-auto text-sm text-black/55">
-          Copyright © 2026 Weblog
-        </p>
-      </div>
-    </footer>
-  );
+async function getNavigationItems(locale: Locale): Promise<NavigationItem[]> {
+  const dictionary = getDictionary(locale);
+  const cmsNavigationItems = await getNavigationPages(locale);
+  const baseNavigationItems = getBaseNavigationItems(locale, dictionary);
+
+  return [...baseNavigationItems, ...cmsNavigationItems];
 }

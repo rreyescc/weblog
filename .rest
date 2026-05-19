@@ -1,66 +1,60 @@
-### Post creado
+### Post creado (es)
 # Firma requerida: HMAC-SHA256 del body exacto usando REVALIDATE_SECRET.
 # Header: x-revalidate-signature: sha256=<hex>
 POST http://localhost:3000/api/revalidate
 Content-Type: application/json
-x-revalidate-signature: sha256=3673db732c602fc2f5e8ff4fd11fc1c07dc1660ddbf15bb6a7bed85d6cb041a6
+x-revalidate-signature: sha256=190d04b37e8b3cf806f1a8fc14b2a8d46d3b779465564148abedb88f361eb538
 
-{"entity":"post","event":"created","slug":"como-estructurar-un-blog-con-next"}
+{"entity":"post","event":"created","locale":"es","slug":"como-estructurar-un-blog-con-next"}
 
-### Post actualizado
+### Post actualizado (es)
 POST http://localhost:3000/api/revalidate
 Content-Type: application/json
-x-revalidate-signature: sha256=d726a971a5757e34f43d73e6cf33cab4685d65b7101d2e2ba9e786b580550663
+x-revalidate-signature: sha256=9691db66800174793f91acc819027803069565f77e36860ad45814789f6f2ced
 
-{"entity":"post","event":"updated","slug":"como-estructurar-un-blog-con-next"}
+{"entity":"post","event":"updated","locale":"es","slug":"como-estructurar-un-blog-con-next"}
 
-### Post actualizado con cambio de slug
+### Post actualizado con cambio de slug (en)
 POST http://localhost:3000/api/revalidate
 Content-Type: application/json
-x-revalidate-signature: sha256=735707ab8f7b27528d6c1bf783f78e6d3d3a61d3fe59d5f166dc17ca3a2eb484
+x-revalidate-signature: sha256=da44f2db6775ac0126322d62e9a887454bb5d102386f42afcea87242b3dabb29
 
-{"entity":"post","event":"updated","slug":"slug-nuevo","previousSlug":"slug-anterior"}
+{"entity":"post","event":"updated","locale":"en","slug":"new-slug","previousSlug":"old-slug"}
 
-### Post eliminado
+### Post eliminado (es)
 POST http://localhost:3000/api/revalidate
 Content-Type: application/json
-x-revalidate-signature: sha256=d788b9ffb6c1df4f8c4e526e71db508745af986264565cab55ee3f9bd34ffec0
+x-revalidate-signature: sha256=1896b2833dddb96ee12d58960ce69c3a8abfb2192a32f42e1ea735ca54851d3c
 
-{"entity":"post","event":"deleted","slug":"como-estructurar-un-blog-con-next"}
+{"entity":"post","event":"deleted","locale":"es","slug":"como-estructurar-un-blog-con-next"}
 
-### Page creada (about)
+### Page creada (en/about)
 POST http://localhost:3000/api/revalidate
 Content-Type: application/json
-x-revalidate-signature: sha256=fb3fca7c15347c0ab56311a08c566776b3d87ac407d63c52aef76d8eecbe8e5e
+x-revalidate-signature: sha256=ebce00c29b8639e1c805e5837910e7555c5b64d186c216b475be47be40cff469
 
-{"entity":"page","event":"created","path":"/about"}
+{"entity":"page","event":"created","locale":"en","path":"/about"}
 
-### Page actualizada
+### Page actualizada (en/about)
 POST http://localhost:3000/api/revalidate
 Content-Type: application/json
-x-revalidate-signature: sha256=1b7ac0aedffe058cfa103c389632b095852aa8a757c233721531aa2187c3976d
+x-revalidate-signature: sha256=e4ccc03f43f17a27ee612d45aa52048098bf970cafcaabcacf804d36a48ddec9
 
-{"entity":"page","event":"updated","path":"/about"}
+{"entity":"page","event":"updated","locale":"en","path":"/about"}
 
-### Page actualizada con cambio de path
+### Page actualizada con cambio de path (en)
 POST http://localhost:3000/api/revalidate
 Content-Type: application/json
-x-revalidate-signature: sha256=0a73d7354d4ee77d62804614a0f09454f0fbccca334cfb7fa62ce5b73d234fbc
+x-revalidate-signature: sha256=bf6e724c909d388854dcd73950fa24aed11142fd8b743605ae5d40b699896114
 
-{"entity":"page","event":"updated","path":"/company","previousPath":"/about"}
+{"entity":"page","event":"updated","locale":"en","path":"/company","previousPath":"/about"}
 
-### Page eliminada
+### Page eliminada (en)
 POST http://localhost:3000/api/revalidate
 Content-Type: application/json
-x-revalidate-signature: sha256=47d32e3476e97cb42449a402419970cd74e76137b5b5a8fa8bd11f64e5c0e28d
+x-revalidate-signature: sha256=e332001f744d2ba3303b1053e663af5e19a5846e87ba995d3f72304aa274d984
 
-{"entity":"page","event":"deleted","path":"/company"}
+{"entity":"page","event":"deleted","locale":"en","path":"/company"}
 
-# node -e 'const secret="8d2ffe1a4617bab43322846470417b2ba98ba0f6577ea029ce135ea77595e0f5"; const body="{\"entity\":\"post\",\"event\":\"created\",\"slug\":\"como-estructurar-un-blog-con-next\"}"; console.log(require("node:crypto").createHmac("sha256", secret).update(body, "utf8").digest("hex"))'
-# node -e 'const secret="8d2ffe1a4617bab43322846470417b2ba98ba0f6577ea029ce135ea77595e0f5"; const body="{\"entity\":\"post\",\"event\":\"updated\",\"slug\":\"como-estructurar-un-blog-con-next\"}"; console.log(require("node:crypto").createHmac("sha256", secret).update(body, "utf8").digest("hex"))'
-# node -e 'const secret="8d2ffe1a4617bab43322846470417b2ba98ba0f6577ea029ce135ea77595e0f5"; const body="{\"entity\":\"post\",\"event\":\"updated\",\"slug\":\"slug-nuevo\",\"previousSlug\":\"slug-anterior\"}"; console.log(require("node:crypto").createHmac("sha256", secret).update(body, "utf8").digest("hex"))'
-# node -e 'const secret="8d2ffe1a4617bab43322846470417b2ba98ba0f6577ea029ce135ea77595e0f5"; const body="{\"entity\":\"post\",\"event\":\"deleted\",\"slug\":\"como-estructurar-un-blog-con-next\"}"; console.log(require("node:crypto").createHmac("sha256", secret).update(body, "utf8").digest("hex"))'
-# node -e 'const secret="8d2ffe1a4617bab43322846470417b2ba98ba0f6577ea029ce135ea77595e0f5"; const body="{\"entity\":\"page\",\"event\":\"created\",\"path\":\"/about\"}"; console.log(require("node:crypto").createHmac("sha256", secret).update(body, "utf8").digest("hex"))'
-# node -e 'const secret="8d2ffe1a4617bab43322846470417b2ba98ba0f6577ea029ce135ea77595e0f5"; const body="{\"entity\":\"page\",\"event\":\"updated\",\"path\":\"/about\"}"; console.log(require("node:crypto").createHmac("sha256", secret).update(body, "utf8").digest("hex"))'
-# node -e 'const secret="8d2ffe1a4617bab43322846470417b2ba98ba0f6577ea029ce135ea77595e0f5"; const body="{\"entity\":\"page\",\"event\":\"updated\",\"path\":\"/company\",\"previousPath\":\"/about\"}"; console.log(require("node:crypto").createHmac("sha256", secret).update(body, "utf8").digest("hex"))'
-# node -e 'const secret="8d2ffe1a4617bab43322846470417b2ba98ba0f6577ea029ce135ea77595e0f5"; const body="{\"entity\":\"page\",\"event\":\"deleted\",\"path\":\"/company\"}"; console.log(require("node:crypto").createHmac("sha256", secret).update(body, "utf8").digest("hex"))'
+# node -e 'const secret="8d2ffe1a4617bab43322846470417b2ba98ba0f6577ea029ce135ea77595e0f5"; const body="{\"entity\":\"post\",\"event\":\"created\",\"locale\":\"es\",\"slug\":\"como-estructurar-un-blog-con-next\"}"; console.log(require("node:crypto").createHmac("sha256", secret).update(body, "utf8").digest("hex"))'
+# node -e 'const secret="8d2ffe1a4617bab43322846470417b2ba98ba0f6577ea029ce135ea77595e0f5"; const body="{\"entity\":\"page\",\"event\":\"updated\",\"locale\":\"en\",\"path\":\"/about\"}"; console.log(require("node:crypto").createHmac("sha256", secret).update(body, "utf8").digest("hex"))'
